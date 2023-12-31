@@ -13,6 +13,7 @@ You will also need a RabbitMQ instance. It is recommended to use a docker image.
 Clone the current repository and build an executable of the project:
 
 ```sh
+go mod tidy
 go build -o middleman main.go
 ```
 
