@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/websocket"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -169,10 +170,13 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	// Keep the connection alive and consume messages from RabbitMQ.
 
-	for _, message := range messages {
-		if !message.Sent {
-			message.Sent = true
-			sendMessage(conn, message)
+	for {
+		time.Sleep(time.Second * 5)
+		for i, message := range messages {
+			if !message.Sent {
+				sendMessage(conn, message)
+				messages[i] = Message{Body: message.Body, Sent: true}
+			}
 		}
 	}
 }
