@@ -146,18 +146,15 @@ func storeMessage(message amqp.Delivery) {
 
 // Send message through a websocket connection.
 func sendMessage(conn *websocket.Conn, message Message) {
-	jsonMessage, err := json.Marshal(message)
 
-	if err != nil {
-		log.Printf("failed to encode message object into json: %s\n", err)
-		return
-	}
-
-	err = conn.WriteJSON(jsonMessage)
+	err := conn.WriteJSON(message)
 
 	if err != nil {
 		log.Printf("failed to write json in websocket pipe: %s\n", err)
+		return
 	}
+
+	log.Printf("sent message: %s\n", message.Body)
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -171,11 +168,11 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// Keep the connection alive and consume messages from RabbitMQ.
-	for {
-		for _, message := range messages {
-			if !message.Sent {
-				sendMessage(conn, message)
-			}
+
+	for _, message := range messages {
+		if !message.Sent {
+			message.Sent = true
+			sendMessage(conn, message)
 		}
 	}
 }
